@@ -6,6 +6,7 @@ using MassTransit;
 using KafkaMT.Filters;
 using MassTransit.Internals;
 using KafkaMT.Services;
+using KafkaMT.Mediatr;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -121,6 +122,17 @@ builder.Services.AddMassTransit(x =>
 		});
 	});
 });
+
+#region MediatR
+
+builder.Services.AddScoped<IdempotentcyCheckService>();
+builder.Services.AddMediatR(x =>
+{
+	x.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
+	x.AddOpenBehavior(typeof(IdempotencyBehavior<,>));
+});
+
+#endregion
 
 var app = builder.Build();
 

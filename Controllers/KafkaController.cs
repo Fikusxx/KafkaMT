@@ -1,5 +1,7 @@
-﻿using KafkaMT.Messages;
+﻿using KafkaMT.Mediatr;
+using KafkaMT.Messages;
 using MassTransit;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KafkaMT.Controllers;
@@ -9,10 +11,12 @@ namespace KafkaMT.Controllers;
 public class KafkaController : ControllerBase
 {
 	private readonly ITopicProducer<KafkaMessage> producer;
+	private readonly IMediator mediator;
 
-	public KafkaController(ITopicProducer<KafkaMessage> producer)
+	public KafkaController(ITopicProducer<KafkaMessage> producer, IMediator mediator)
 	{
 		this.producer = producer;
+		this.mediator = mediator;
 	}
 
 	[HttpGet]
@@ -28,6 +32,16 @@ public class KafkaController : ControllerBase
 			ctx.Headers.Set("Test Key", "Test Value");
 			ctx.Headers.Set("Time", DateTimeOffset.UtcNow);
 		}));
+
+		return Ok();
+	}
+
+	[HttpGet]
+	[Route("idem-check")]
+	public async Task<IActionResult> IdempotencyCheck()
+	{
+		var request = new Request() { IdempotencyKey = Guid.Parse("1441ab2e-7db3-48fe-8b38-f04710823c0e") };
+		await mediator.Send(request);
 
 		return Ok();
 	}
