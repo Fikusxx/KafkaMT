@@ -7,6 +7,7 @@ public sealed class KafkaMessageConsumer : IConsumer<KafkaMessage>
 {
 	public async Task Consume(ConsumeContext<KafkaMessage> context)
 	{
+		var key = context.GetKey<Guid>();
 		var partition = context.Partition();
 		var offset = context.Offset();
 		var messageId = context.MessageId;
@@ -15,7 +16,9 @@ public sealed class KafkaMessageConsumer : IConsumer<KafkaMessage>
 		var value = context.Headers.FirstOrDefault(x => x.Key == "Test Key").Value;
 		var time2 = context.Headers.Get<DateTimeOffset>("Time");
 
-        await Console.Out.WriteLineAsync($"{messageId} : partition {partition} offset {offset} at {time2!.Value.ToLocalTime()}");
+		var timeValue = time2 is not null ? time2.Value.ToLocalTime() : DateTimeOffset.UtcNow.ToLocalTime();
+
+        await Console.Out.WriteLineAsync($"{messageId} : key {key} partition {partition} offset {offset} at {timeValue}");
 
         // can be piped or used as is due to high events cohesion for granularity
         if (retry == 2)

@@ -1,5 +1,4 @@
-﻿
-using MediatR;
+﻿using MediatR;
 
 namespace KafkaMT.Mediatr;
 
@@ -15,12 +14,13 @@ public class IdempotencyBehavior<TRequest, TResponse> : IPipelineBehavior<TReque
 
 	public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
 	{
-		var isProcessed = await service.IsProcessed(request, request.IdempotencyKey);
+		var isProcessed = await service.IsProcessed(request);
 
+		// if that request has already been processed - break the pipeline
 		if (isProcessed)
 			return default;
 
-		// write to db { request, key }
+		// write to db { id, requestName, requestId }
 		// saveChanges will be called in the requestHandler itself
 
 		return await next.Invoke();

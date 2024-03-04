@@ -21,12 +21,12 @@ public sealed class IdempotencyFilter<T> : IFilter<ConsumeContext<T>> where T : 
 
 		var time = context.Headers.Get<DateTimeOffset>("Time");
 
-		await Console.Out.WriteLineAsync($"{context.MessageId} Idempotency check start at {time!.Value.ToLocalTime()}");
+		await Console.Out.WriteLineAsync($"{context.MessageId} Idempotency check start at {(time is not null ? time.Value.ToLocalTime() : DateTime.UtcNow)}");
 
-        if (context.MessageId == Guid.Parse("1441ab2e-7db3-48fe-8b38-f04710823c0e"))
+		if (context.MessageId == Guid.Parse("1441ab2e-7db3-48fe-8b38-f04710823c0e"))
 		{
-            await Console.Out.WriteLineAsync($"{context.MessageId} Idempotency check fail at {time!.Value.ToLocalTime()}");
-            return;
+			await Console.Out.WriteLineAsync($"{context.MessageId} Idempotency check fail at {(time is not null ? time.Value.ToLocalTime() : DateTime.UtcNow)}");
+			return;
 		}
 
 		await next.Send(context);
